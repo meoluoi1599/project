@@ -15,8 +15,10 @@ app.config['SECRET_KEY'] = 'mysecret'
 app.config['JWT_SECRET_KEY'] = 'Meow meow meow'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/test'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/project_end_year'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 database = SQLAlchemy(app)
+db = SQLAlchemy(app)
 
 
 # socketio = SocketIO(app,cors_allowed_origins="*")
@@ -31,6 +33,15 @@ if not os.path.exists(FILE_DIRECTORY):
 import mymodel 
 from mymodel import database
 database = database() 
+
+class Book(db.Model):
+    __tablename__ = 'tblStory'
+    story_id = db.Column('story_id',db.Integer, primary_key=True)
+    story_title = db.Column('story_title',db.String(200), nullable = False)
+    story_description = db.Column('story_description',db.String(500))
+    story_img = db.Column('story_img',db.String(200))
+    story_part = db.Column('story_part',db.Integer)
+    author_id = db.Column('author_id',db.String(200), nullable = False) 
 
 #login for users
 @app.route('/login', methods = ['POST'])
@@ -82,9 +93,11 @@ def getBooks():
     author_id = database.Column('author_id',database.String(200), null = False)
 
     result = database.getBooks.query.paginate(page = page,per_page=1).items
+    result = Book.query.paginate(page = 2, per_page=1).items
     re = []
     for story in result:
         json_result = (story.story_id,story.story_title, story.story_description, story.story_img, story.story_part, story.author_id)
+        json_result = jsonify({'story_id':story.story_id,story.story_title,story.story_description, story.story_img,story.story_part, story.author_id})
         re.append(json_result)
     return jsonify(re)
 
@@ -126,4 +139,5 @@ if __name__ == '__main__':
     # app.run(host="0.0.0.0",port=5000)
     #app.run(port=5000)
     app.run(host="0.0.0.0",port=5000)
+    app.run(debug=True,host="0.0.0.0",port=5000)
     # app.run(host="192.168.0.103", port=5000)
