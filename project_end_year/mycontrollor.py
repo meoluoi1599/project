@@ -3,8 +3,8 @@ from flask import Flask, render_template,jsonify, json, request,send_from_direct
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, JWTManager
 from flask_bcrypt import Bcrypt
+from flask_sqlalchemy import SQLAlchemy
 
-from flask_paginate import Pagination
 # from flask_mail import Mail, Message
 
 # from werkzeug.utils import secure_filename
@@ -13,6 +13,10 @@ import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['JWT_SECRET_KEY'] = 'Meow meow meow'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/test'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+database = SQLAlchemy(app)
 
 
 # socketio = SocketIO(app,cors_allowed_origins="*")
@@ -57,12 +61,12 @@ def signup():
     # get data from frontend
     username = request.json.get('username')
     password = request.json.get('password')
-    nick_name = request.json.get('nick_name')
-    facebook = request.json.get('facebook')
+    nick_name = request.json.get('fullname')
+    email = request.json.get('email')
     password = bcrypt.generate_password_hash(password).decode('utf-8')
     print(password)
     # get data from database.signup of mymodel.py
-    values = (username,password,facebook,nick_name)
+    values = (username,password,email,nick_name)
     new_account = database.signup(values)
     return jsonify({'new_account': new_account})
 
@@ -70,7 +74,19 @@ def signup():
 @app.route('/', methods = ['GET'])
 def getBooks():
     result = database.getBooks()
-    return jsonify(result)
+    story_id = database.Column('story_id',database.Integer, primary_key=True)
+    story_title = database.Column('story_title',database.String(200), null = False)
+    story_description = database.Column('story_description',database.String(500))
+    story_img = database.Column('story_img',database.String(200))
+    story_part = database.Column('story_part',database.Integer)
+    author_id = database.Column('author_id',database.String(200), null = False)
+
+    result = database.getBooks.query.paginate(page = page,per_page=1).items
+    re = []
+    for story in result:
+        json_result = (story.story_id,story.story_title, story.story_description, story.story_img, story.story_part, story.author_id)
+        re.append(json_result)
+    return jsonify(re)
 
 # get list catagoty
 @app.route('/category', methods = ['GET'])
@@ -110,3 +126,4 @@ if __name__ == '__main__':
     # app.run(host="0.0.0.0",port=5000)
     #app.run(port=5000)
     app.run(host="0.0.0.0",port=5000)
+    # app.run(host="192.168.0.103", port=5000)

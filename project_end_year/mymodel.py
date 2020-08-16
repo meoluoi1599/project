@@ -43,12 +43,18 @@ class database:
     # create account for user
     def signup(self, values):
         try:
-            query = 'insert into tbluser(user_name, user_pw, user_facebook, nick_name) values(%s,%s,%s,%s)'
+            query = 'insert into tbluser(user_name, user_pw, user_email, nick_name) values(%s,%s,%s,%s)'
+            query1 = 'select * from tbluser where user_name = %s'
             conn = conn1()
             cursor = conn.cursor(buffered = True, dictionary = True)
-            cursor.execute(query,values)
-            conn.commit()
-            row_affected = cursor.rowcount
+            cursor.execute(query1, (values[0],))
+            result1 = cursor.fetchall()
+            if result1:
+                return 0
+            else:
+                cursor.execute(query,values)
+                conn.commit()
+                row_affected = cursor.rowcount
             close_connection(conn, cursor)
             return row_affected
         except:
@@ -58,6 +64,7 @@ class database:
     # get list of books\
     def getBooks(self):
         try:
+            # query = 'select * from tblstory'
             query = 'select * from tblstory'
             conn = conn1()
             cursor = conn.cursor(buffered = True, dictionary = True)
