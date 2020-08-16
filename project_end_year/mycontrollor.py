@@ -14,10 +14,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['JWT_SECRET_KEY'] = 'Meow meow meow'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/test'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/project_end_year'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-database = SQLAlchemy(app)
 db = SQLAlchemy(app)
 
 
@@ -84,13 +82,7 @@ def signup():
 # get list books
 @app.route('/', methods = ['GET'])
 def getBooks():
-    result = database.getBooks()
-    story_id = database.Column('story_id',database.Integer, primary_key=True)
-    story_title = database.Column('story_title',database.String(200), null = False)
     story_description = database.Column('story_description',database.String(500))
-    story_img = database.Column('story_img',database.String(200))
-    story_part = database.Column('story_part',database.Integer)
-    author_id = database.Column('author_id',database.String(200), null = False)
 
     result = database.getBooks.query.paginate(page = page,per_page=1).items
     result = Book.query.paginate(page = 2, per_page=1).items
